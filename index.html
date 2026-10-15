@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026 수성구로보틱스컵 대회 번호 추첨기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .animate-pulse-ring {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes bounce-short {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-bounce-short {
+      animation: bounce-short 0.4s ease-in-out;
+    }
+    .perspective-card {
+      perspective: 1000px;
+    }
+    .slot-blur {
+      filter: blur(2px);
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-cyan-500 selection:text-white">
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 text-xl">
+          🤖
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400 bg-clip-text text-transparent">
+            2026 수성구 로보틱스컵 대회 번호 추첨기
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">1~5번 무작위 스테이지/역할 배정 시뮬레이터</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Sound Toggle -->
+        <button id="soundToggleBtn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition">
+          <span id="soundIcon">🔊</span>
+          <span id="soundText" class="hidden sm:inline">효과음 켜짐</span>
+        </button>
+        <!-- Fullscreen Button -->
+        <button id="fullscreenBtn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition" title="전체화면 전환">
+          🖥️ <span class="hidden sm:inline">전체화면</span>
+        </button>
+        <!-- Reset All -->
+        <button id="resetAllBtn" class="px-3 py-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-semibold border border-rose-800/40 transition">
+          🔄 초기화
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+    <!-- Step 1: Robot Type Selection -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 text-xs font-bold flex items-center justify-center border border-cyan-500/30">1</span>
+          <h2 class="text-sm md:text-base font-bold text-slate-200">로봇 유형을 선택하세요</h2>
+        </div>
+        <span class="text-xs text-cyan-400 font-medium bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-800/50">
+          선택된 로봇: <strong id="selectedRobotBadge">주차 로봇</strong>
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Parking Robot -->
+        <button type="button" class="robot-card group relative p-4 rounded-2xl border text-left transition-all duration-200 bg-slate-900/80 border-cyan-500 ring-2 ring-cyan-500/50 shadow-lg shadow-cyan-500/10" data-robot="parking">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-3xl p-2 rounded-xl bg-cyan-950/80 border border-cyan-800/40">🚗</span>
+            <span class="last-num-badge text-xs px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-400">대기</span>
+          </div>
+          <h3 class="font-extrabold text-sm sm:text-base text-white group-hover:text-cyan-300 transition">주차 로봇</h3>
+          <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">정밀 주차 & 경로 탐색</p>
+        </button>
+
+        <!-- Rescue Robot -->
+        <button type="button" class="robot-card group relative p-4 rounded-2xl border text-left transition-all duration-200 bg-slate-900/40 border-slate-800 hover:border-slate-700" data-robot="rescue">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-3xl p-2 rounded-xl bg-emerald-950/80 border border-emerald-800/40">🚑</span>
+            <span class="last-num-badge text-xs px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-400">대기</span>
+          </div>
+          <h3 class="font-extrabold text-sm sm:text-base text-white group-hover:text-emerald-300 transition">구조 로봇</h3>
+          <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">험지 돌파 & 조난 탐색</p>
+        </button>
+
+        <!-- Cleaning Robot -->
+        <button type="button" class="robot-card group relative p-4 rounded-2xl border text-left transition-all duration-200 bg-slate-900/40 border-slate-800 hover:border-slate-700" data-robot="cleaner">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-3xl p-2 rounded-xl bg-amber-950/80 border border-amber-800/40">🧹</span>
+            <span class="last-num-badge text-xs px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-400">대기</span>
+          </div>
+          <h3 class="font-extrabold text-sm sm:text-base text-white group-hover:text-amber-300 transition">청소 로봇</h3>
+          <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">장애물 회피 & 면적 청소</p>
+        </button>
+
+        <!-- Swarm Drone -->
+        <button type="button" class="robot-card group relative p-4 rounded-2xl border text-left transition-all duration-200 bg-slate-900/40 border-slate-800 hover:border-slate-700" data-robot="drone">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-3xl p-2 rounded-xl bg-purple-950/80 border border-purple-800/40">🛸</span>
+            <span class="last-num-badge text-xs px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-400">대기</span>
+          </div>
+          <h3 class="font-extrabold text-sm sm:text-base text-white group-hover:text-purple-300 transition">군집 드론</h3>
+          <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">편대 비행 & 공중 정찰</p>
+        </button>
+      </div>
+    </section>
+
+    <!-- Step 2: Stage & Number Lottery Arena -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 bg-slate-900/60 border border-slate-800/90 rounded-3xl p-6 flex flex-col items-center justify-between shadow-2xl relative overflow-hidden">
+        <!-- Background decorative ambient circles -->
+        <div id="ambientGlow" class="absolute w-72 h-72 rounded-full bg-cyan-500/10 filter blur-3xl -top-10 -left-10 pointer-events-none transition-colors duration-500"></div>
+        <div class="absolute w-60 h-60 rounded-full bg-indigo-500/10 filter blur-3xl -bottom-10 -right-10 pointer-events-none"></div>
+
+        <div class="w-full flex items-center justify-between text-xs font-semibold text-slate-400 z-10">
+          <div class="flex items-center gap-1.5">
+            <span id="currentRobotIcon" class="text-lg">🚗</span>
+            <span id="currentRobotName" class="text-slate-200 font-bold text-sm">주차 로봇</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-800 text-cyan-300 font-bold text-xs flex items-center gap-1">
+              <span>🔒 중복 불가</span>
+              <span id="remainingCountBadge" class="bg-cyan-500/20 px-1.5 py-0.2 rounded text-[11px] text-cyan-300">남은 번호: 5개</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Big Display Ring -->
+        <div class="relative my-8 flex items-center justify-center z-10">
+          <div id="pulseGlow" class="absolute inset-0 rounded-full bg-cyan-500/20 blur-xl scale-110 opacity-0 transition-opacity duration-300"></div>
+          
+          <div class="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full bg-gradient-to-b from-slate-800 to-slate-950 border-4 border-slate-700/80 flex flex-col items-center justify-center shadow-inner shadow-black">
+            <!-- Inner Ring Decor -->
+            <div class="absolute inset-2 rounded-full border border-dashed border-slate-600/40"></div>
+            
+            <!-- Number Text -->
+            <span id="rouletteDisplay" class="text-7xl sm:text-8xl font-black tracking-tighter text-cyan-400 transition-all duration-75 select-none drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]">
+              ?
+            </span>
+            <span id="rouletteSubtext" class="text-xs font-bold text-slate-400 tracking-wider uppercase mt-1">
+              READY
+            </span>
+          </div>
+        </div>
+
+        <!-- Remaining Numbers Visual Chips -->
+        <div class="z-10 flex flex-col items-center gap-1.5 mb-3">
+          <span class="text-[11px] font-semibold text-slate-400">현재 로봇의 추첨 가능한 번호</span>
+          <div id="remainingChipsContainer" class="flex items-center gap-2">
+            <!-- Dynamically populated with numbers 1 to 5 -->
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="w-full space-y-3 z-10">
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <!-- Student / Team Input (Optional) -->
+            <div class="relative flex-1">
+              <input type="text" id="studentNameInput" placeholder="학생/모둠 이름 입력 후 Enter (예: 가팀)" maxlength="12"
+                class="w-full bg-slate-950/70 border border-slate-700 rounded-xl px-3.5 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition">
+            </div>
+
+            <!-- Single Pick Button -->
+            <button id="pickBtn" type="button" class="flex-1 py-3.5 px-6 rounded-xl font-extrabold text-base bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/25 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              <span>🎯</span>
+              <span id="pickBtnText">이 로봇으로 번호 뽑기!</span>
+            </button>
+          </div>
+
+          <!-- Quick Actions & Reset current robot pool -->
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+            <span class="text-slate-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>동일 로봇 연속 추첨 가능 (1~5번 중복 없음)</span>
+            </span>
+            <div class="flex items-center gap-3">
+              <button id="resetCurrentRobotBtn" class="text-xs text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-4 transition">
+                ↺ 현재 로봇(1~5) 초기화
+              </button>
+              <button id="batchRollBtn" class="text-xs text-sky-400 hover:text-sky-300 font-semibold underline underline-offset-4 transition">
+                ⚡ 4개 로봇 일괄 배정
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Status & Recent Logs -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+        <!-- 4 Robot Status Overview Box with 1~5 slots -->
+        <div class="bg-slate-900/60 border border-slate-800/90 rounded-3xl p-5 shadow-xl">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <span>📋</span> 로봇별 1~5번 배정 현황
+            </h3>
+            <span class="text-[11px] text-cyan-400 font-medium">연속 추첨 실시간 반영</span>
+          </div>
+
+          <div class="space-y-3">
+            <!-- Parking Status Row -->
+            <div id="row-parking" class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🚗</span>
+                  <span class="text-xs font-bold text-slate-200">주차 로봇</span>
+                </div>
+                <span class="count-tag text-[11px] font-semibold text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-800/50">0 / 5명 배정</span>
+              </div>
+              <div class="slots-container grid grid-cols-5 gap-1 pt-1">
+                <!-- 1 to 5 badges generated by JS -->
+              </div>
+            </div>
+
+            <!-- Rescue Status Row -->
+            <div id="row-rescue" class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🚑</span>
+                  <span class="text-xs font-bold text-slate-200">구조 로봇</span>
+                </div>
+                <span class="count-tag text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/50">0 / 5명 배정</span>
+              </div>
+              <div class="slots-container grid grid-cols-5 gap-1 pt-1"></div>
+            </div>
+
+            <!-- Cleaning Status Row -->
+            <div id="row-cleaner" class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🧹</span>
+                  <span class="text-xs font-bold text-slate-200">청소 로봇</span>
+                </div>
+                <span class="count-tag text-[11px] font-semibold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-800/50">0 / 5명 배정</span>
+              </div>
+              <div class="slots-container grid grid-cols-5 gap-1 pt-1"></div>
+            </div>
+
+            <!-- Drone Status Row -->
+            <div id="row-drone" class="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🛸</span>
+                  <span class="text-xs font-bold text-slate-200">군집 드론</span>
+                </div>
+                <span class="count-tag text-[11px] font-semibold text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded-full border border-purple-800/50">0 / 5명 배정</span>
+              </div>
+              <div class="slots-container grid grid-cols-5 gap-1 pt-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Log Box -->
+        <div class="bg-slate-900/60 border border-slate-800/90 rounded-3xl p-5 flex-1 flex flex-col shadow-xl min-h-[180px]">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <span>🕒</span> 최근 추첨 기록
+            </h3>
+            <button id="copyHistoryBtn" class="text-[11px] text-slate-400 hover:text-slate-200 transition">
+              기록 복사
+            </button>
+          </div>
+          <div id="historyContainer" class="flex-1 overflow-y-auto space-y-1.5 max-h-48 pr-1 text-xs">
+            <div class="text-center py-6 text-slate-600">아직 추첨 기록이 없습니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Notification Toast Modal -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 bg-slate-800 border border-cyan-500/40 text-slate-100 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-sm pointer-events-none">
+    <span id="toastIcon">✨</span>
+    <span id="toastMsg">알림 메시지</span>
+  </div>
+
+  <script>
+    // Web Audio API for playful classroom sound effects (No external audio file dependencies)
+    class SoundController {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playTick() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(380 + Math.random() * 120, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.05);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      playSuccess() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.07);
+            gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.07);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.07 + 0.25);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + idx * 0.07);
+            osc.stop(this.ctx.currentTime + idx * 0.07 + 0.3);
+          });
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+      playClick() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.03);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.03);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+    }
+
+    const sound = new SoundController();
+
+    const ROBOTS = {
+      parking: {
+        id: 'parking',
+        name: '주차 로봇',
+        icon: '🚗',
+        colorClass: 'text-cyan-400',
+        ringColor: 'ring-cyan-500/50',
+        borderActive: 'border-cyan-500',
+        glowBg: 'bg-cyan-500/10'
+      },
+      rescue: {
+        id: 'rescue',
+        name: '구조 로봇',
+        icon: '🚑',
+        colorClass: 'text-emerald-400',
+        ringColor: 'ring-emerald-500/50',
+        borderActive: 'border-emerald-500',
+        glowBg: 'bg-emerald-500/10'
+      },
+      cleaner: {
+        id: 'cleaner',
+        name: '청소 로봇',
+        icon: '🧹',
+        colorClass: 'text-amber-400',
+        ringColor: 'ring-amber-500/50',
+        borderActive: 'border-amber-500',
+        glowBg: 'bg-amber-500/10'
+      },
+      drone: {
+        id: 'drone',
+        name: '군집 드론',
+        icon: '🛸',
+        colorClass: 'text-purple-400',
+        ringColor: 'ring-purple-500/50',
+        borderActive: 'border-purple-500',
+        glowBg: 'bg-purple-500/10'
+      }
+    };
+
+    let currentRobotKey = 'parking';
+    let isRolling = false;
+    const historyList = [];
+
+    // Each robot can store 1~5 student assignments
+    const assignedSlots = {
+      parking: { 1: null, 2: null, 3: null, 4: null, 5: null },
+      rescue: { 1: null, 2: null, 3: null, 4: null, 5: null },
+      cleaner: { 1: null, 2: null, 3: null, 4: null, 5: null },
+      drone: { 1: null, 2: null, 3: null, 4: null, 5: null }
+    };
+
+    // Non-repeat pools for each robot
+    const availablePools = {
+      parking: [1, 2, 3, 4, 5],
+      rescue: [1, 2, 3, 4, 5],
+      cleaner: [1, 2, 3, 4, 5],
+      drone: [1, 2, 3, 4, 5]
+    };
+
+    // DOM Elements
+    const rouletteDisplay = document.getElementById('rouletteDisplay');
+    const rouletteSubtext = document.getElementById('rouletteSubtext');
+    const pulseGlow = document.getElementById('pulseGlow');
+    const pickBtn = document.getElementById('pickBtn');
+    const pickBtnText = document.getElementById('pickBtnText');
+    const currentRobotName = document.getElementById('currentRobotName');
+    const currentRobotIcon = document.getElementById('currentRobotIcon');
+    const selectedRobotBadge = document.getElementById('selectedRobotBadge');
+    const studentNameInput = document.getElementById('studentNameInput');
+    const remainingCountBadge = document.getElementById('remainingCountBadge');
+    const remainingChipsContainer = document.getElementById('remainingChipsContainer');
+    const resetCurrentRobotBtn = document.getElementById('resetCurrentRobotBtn');
+    const historyContainer = document.getElementById('historyContainer');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const soundText = document.getElementById('soundText');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const resetAllBtn = document.getElementById('resetAllBtn');
+    const batchRollBtn = document.getElementById('batchRollBtn');
+    const ambientGlow = document.getElementById('ambientGlow');
+    const robotCards = document.querySelectorAll('.robot-card');
+
+    function renderRemainingChips() {
+      const pool = availablePools[currentRobotKey] || [];
+      remainingCountBadge.textContent = `남은 번호: ${pool.length}개`;
+
+      remainingChipsContainer.innerHTML = [1, 2, 3, 4, 5].map(num => {
+        const isAvailable = pool.includes(num);
+        if (isAvailable) {
+          return `<span class="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-500/60 text-cyan-300 font-extrabold flex items-center justify-center text-sm shadow-sm">${num}</span>`;
+        } else {
+          const student = assignedSlots[currentRobotKey][num];
+          const titleText = student ? `${num}번: ${student}` : `${num}번 배정완료`;
+          return `<span title="${titleText}" class="w-8 h-8 rounded-lg bg-slate-900/50 border border-slate-800 text-slate-500 line-through font-bold flex items-center justify-center text-xs opacity-60 select-none">${num}</span>`;
+        }
+      }).join('');
+
+      // Update button state based on remaining pool
+      if (pool.length === 0) {
+        pickBtn.disabled = true;
+        pickBtnText.textContent = '모든 번호(1~5) 소진됨';
+      } else if (!isRolling) {
+        pickBtn.disabled = false;
+        pickBtnText.textContent = `다음 번호 뽑기 (${pool.length}개 남음)`;
+      }
+    }
+
+    // Select Robot function
+    function selectRobot(robotKey) {
+      if (isRolling) return;
+      currentRobotKey = robotKey;
+      const robot = ROBOTS[robotKey];
+
+      // Update Card Visuals
+      robotCards.forEach(card => {
+        const isTarget = card.dataset.robot === robotKey;
+        if (isTarget) {
+          card.classList.remove('bg-slate-900/40', 'border-slate-800');
+          card.classList.add('bg-slate-900/80', robot.borderActive, 'ring-2', robot.ringColor, 'shadow-lg');
+        } else {
+          card.classList.add('bg-slate-900/40', 'border-slate-800');
+          card.classList.remove(
+            'bg-slate-900/80',
+            'border-cyan-500', 'border-emerald-500', 'border-amber-500', 'border-purple-500',
+            'ring-2', 'ring-cyan-500/50', 'ring-emerald-500/50', 'ring-amber-500/50', 'ring-purple-500/50',
+            'shadow-lg'
+          );
+        }
+      });
+
+      // Update Header & Arena Info
+      currentRobotName.textContent = robot.name;
+      currentRobotIcon.textContent = robot.icon;
+      selectedRobotBadge.textContent = robot.name;
+      ambientGlow.className = `absolute w-72 h-72 rounded-full ${robot.glowBg} filter blur-3xl -top-10 -left-10 pointer-events-none transition-colors duration-500`;
+
+      // Update text color
+      rouletteDisplay.className = `text-7xl sm:text-8xl font-black tracking-tighter ${robot.colorClass} transition-all duration-75 select-none drop-shadow-[0_0_20px_currentColor]`;
+
+      const pool = availablePools[robotKey] || [];
+      rouletteDisplay.textContent = '?';
+      rouletteSubtext.textContent = pool.length > 0 ? 'READY' : 'ALL ASSIGNED';
+
+      renderRemainingChips();
+      sound.playClick();
+    }
+
+    // Strictly pick without duplicates from the remaining pool
+    function getStrictNonRepeatingNumber(robotKey) {
+      let pool = availablePools[robotKey];
+      if (!pool || pool.length === 0) {
+        return null; // No numbers left
+      }
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      const chosen = pool.splice(randomIndex, 1)[0]; // Remove permanently from pool
+      return chosen;
+    }
+
+    // Single Pick Action - allows continuous draws for the same robot
+    function startPick(onFinished = null) {
+      if (isRolling) return;
+
+      const pool = availablePools[currentRobotKey];
+      if (!pool || pool.length === 0) {
+        showToast(`⚠️️ [${ROBOTS[currentRobotKey].name}] 1~5번이 모두 배정되었습니다! 하단 초기화 버튼을 눌러주세요.`, '⚠️');
+        return;
+      }
+
+      isRolling = true;
+      pickBtn.disabled = true;
+      batchRollBtn.disabled = true;
+      rouletteSubtext.textContent = 'ROLLING...';
+      rouletteDisplay.classList.add('slot-blur');
+      pulseGlow.classList.remove('opacity-0');
+
+      let speed = 45;
+      let ticks = 0;
+      const maxTicks = 20;
+
+      const rollStep = () => {
+        // Display animated shuffle among available pool
+        const tempIndex = Math.floor(Math.random() * pool.length);
+        rouletteDisplay.textContent = pool[tempIndex];
+        sound.playTick();
+        ticks++;
+
+        if (ticks < maxTicks) {
+          if (ticks > maxTicks - 6) speed += 30;
+          setTimeout(rollStep, speed);
+        } else {
+          // Strictly draw one from remaining pool
+          const finalNumber = getStrictNonRepeatingNumber(currentRobotKey);
+          rouletteDisplay.textContent = finalNumber;
+          rouletteDisplay.classList.remove('slot-blur');
+          rouletteDisplay.classList.add('animate-bounce-short');
+          rouletteSubtext.textContent = `당첨: ${finalNumber}번`;
+          pulseGlow.classList.add('opacity-0');
+          sound.playSuccess();
+
+          setTimeout(() => {
+            rouletteDisplay.classList.remove('animate-bounce-short');
+          }, 400);
+
+          // Save assignment to the robot's slot
+          const assignedCount = 5 - pool.length;
+          const studentName = studentNameInput.value.trim() || `팀 ${assignedCount}`;
+          assignedSlots[currentRobotKey][finalNumber] = studentName;
+
+          // Update Status Row and Card Badge
+          updateStatusRow(currentRobotKey);
+          updateCardBadge(currentRobotKey);
+          renderRemainingChips();
+
+          // Add to History
+          addHistoryItem(ROBOTS[currentRobotKey], finalNumber, studentName);
+
+          // 추첨 완료: 진행 상태 플래그 및 버튼 잠금 해제
+          isRolling = false;
+          batchRollBtn.disabled = false;
+
+          showToast(`🎉 [${ROBOTS[currentRobotKey].name}] ${studentName} → ${finalNumber}번 확정!`);
+
+          // Reset input for the next student to pick the same robot immediately
+          studentNameInput.value = '';
+          studentNameInput.focus();
+
+          if (onFinished) onFinished(finalNumber);
+        }
+      };
+
+      rollStep();
+    }
+
+    function updateCardBadge(robotKey) {
+      const card = document.querySelector(`.robot-card[data-robot="${robotKey}"]`);
+      if (!card) return;
+      const badge = card.querySelector('.last-num-badge');
+      const pool = availablePools[robotKey] || [];
+      const assignedCount = 5 - pool.length;
+      if (assignedCount > 0) {
+        badge.textContent = `${assignedCount}명 배정`;
+        badge.className = 'last-num-badge text-xs px-2 py-0.5 rounded-md font-bold bg-cyan-950 text-cyan-300 border border-cyan-800/40';
+      } else {
+        badge.textContent = '대기';
+        badge.className = 'last-num-badge text-xs px-2 py-0.5 rounded-md font-bold bg-slate-800 text-slate-400';
+      }
+    }
+
+    // Reset current robot's pool to 1~5
+    function resetCurrentRobotPool() {
+      availablePools[currentRobotKey] = [1, 2, 3, 4, 5];
+      assignedSlots[currentRobotKey] = { 1: null, 2: null, 3: null, 4: null, 5: null };
+      updateStatusRow(currentRobotKey);
+      updateCardBadge(currentRobotKey);
+      renderRemainingChips();
+      rouletteDisplay.textContent = '?';
+      rouletteSubtext.textContent = 'READY';
+      showToast(`🔄 [${ROBOTS[currentRobotKey].name}] 1~5번이 다시 충전되었습니다!`);
+    }
+
+    resetCurrentRobotBtn.addEventListener('click', resetCurrentRobotPool);
+
+    function updateStatusRow(robotKey) {
+      const row = document.getElementById(`row-${robotKey}`);
+      if (!row) return;
+      const slots = assignedSlots[robotKey];
+      const countTag = row.querySelector('.count-tag');
+      const slotsContainer = row.querySelector('.slots-container');
+
+      const assignedCount = Object.values(slots).filter(v => v !== null).length;
+      countTag.textContent = `${assignedCount} / 5명 배정`;
+
+      // Render 5 number slots
+      slotsContainer.innerHTML = [1, 2, 3, 4, 5].map(num => {
+        const student = slots[num];
+        if (student) {
+          return `
+            <div class="flex flex-col items-center bg-cyan-950/70 border border-cyan-600/60 rounded-lg py-1 px-0.5 transition" title="${student}">
+              <span class="text-xs font-extrabold text-cyan-300">${num}번</span>
+              <span class="text-[9px] text-cyan-200 truncate w-full text-center px-0.5">${student}</span>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="flex flex-col items-center bg-slate-950/40 border border-slate-800/80 rounded-lg py-1 px-0.5 text-slate-600">
+              <span class="text-xs font-bold text-slate-500">${num}번</span>
+              <span class="text-[9px] text-slate-600">미배정</span>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    function addHistoryItem(robot, number, student) {
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      
+      const item = {
+        robotName: robot.name,
+        icon: robot.icon,
+        number,
+        student,
+        time: timeStr
+      };
+
+      historyList.unshift(item);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (!historyContainer) return;
+      if (historyList.length === 0) {
+        historyContainer.innerHTML = '<div class="text-center py-6 text-slate-600">아직 추첨 기록이 없습니다.</div>';
+        return;
+      }
+
+      historyContainer.innerHTML = historyList.map(item => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 hover:border-slate-700 transition">
+          <div class="flex items-center gap-2">
+            <span class="text-base">${item.icon}</span>
+            <span class="font-bold text-slate-200 text-xs">${item.robotName}</span>
+            <span class="text-[11px] text-slate-400">(${item.student})</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-cyan-950/80 border border-cyan-800/60 text-cyan-400 font-extrabold text-xs">
+              ${item.number}번
+            </span>
+            <span class="text-[10px] text-slate-500">${item.time}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Batch Roll: Automatically rolls for all 4 robots in sequence
+    async function batchRollAll() {
+      if (isRolling) return;
+      const robotKeys = ['parking', 'rescue', 'cleaner', 'drone'];
+      showToast('⚡ 4개 로봇 순차 자동 추첨을 시작합니다!', '🚀');
+
+      for (let i = 0; i < robotKeys.length; i++) {
+        selectRobot(robotKeys[i]);
+        await new Promise(resolve => {
+          setTimeout(() => {
+            startPick(() => {
+              setTimeout(resolve, 600);
+            });
+          }, 400);
+        });
+      }
+    }
+
+    // Reset All State
+    function resetAll() {
+      Object.keys(assignedSlots).forEach(key => {
+        assignedSlots[key] = { 1: null, 2: null, 3: null, 4: null, 5: null };
+        availablePools[key] = [1, 2, 3, 4, 5];
+        updateStatusRow(key);
+        updateCardBadge(key);
+      });
+      historyList.length = 0;
+      renderHistory();
+      renderRemainingChips();
+      rouletteDisplay.textContent = '?';
+      rouletteSubtext.textContent = 'READY';
+      studentNameInput.value = '';
+      showToast('모든 로봇의 번호와 기록을 초기화했습니다.', '🔄');
+    }
+
+    // Robot Selection Clicks
+    robotCards.forEach(card => {
+      card.addEventListener('click', () => {
+        selectRobot(card.dataset.robot);
+      });
+    });
+
+    // Pick Button Click
+    pickBtn.addEventListener('click', () => startPick());
+
+    // Enter Key on Student Input triggers pick immediately
+    studentNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        startPick();
+      }
+    });
+
+    // Batch Roll Button
+    batchRollBtn.addEventListener('click', batchRollAll);
+
+    // Sound Toggle
+    soundToggleBtn.addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      sound.playClick();
+      if (sound.enabled) {
+        soundIcon.textContent = '🔊';
+        soundText.textContent = '효과음 켜짐';
+        showToast('효과음이 켜졌습니다.');
+      } else {
+        soundIcon.textContent = '🔇';
+        soundText.textContent = '효과음 꺼짐';
+        showToast('효과음이 꺼졌습니다.');
+      }
+    });
+
+    // Fullscreen Toggle
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          showToast('전체화면을 지원하지 않는 브라우저입니다.');
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Reset Button
+    resetAllBtn.addEventListener('click', resetAll);
+
+    // Copy History to Clipboard (Using reliable textarea execCommand)
+    document.getElementById('copyHistoryBtn').addEventListener('click', () => {
+      if (historyList.length === 0) {
+        showToast('복사할 기록이 없습니다.', '⚠️');
+        return;
+      }
+      const text = historyList
+        .map(h => `[${h.time}] ${h.robotName}(${h.student || '미지정'}): ${h.number}번`)
+        .join('\n');
+
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      showToast('추첨 기록이 클립보드에 복사되었습니다! 📋', '✅');
+    });
+
+    // Keyboard Shortcuts (Space bar to roll, 1~4 to select robot)
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        startPick();
+      } else if (e.key === '1') {
+        selectRobot('parking');
+      } else if (e.key === '2') {
+        selectRobot('rescue');
+      } else if (e.key === '3') {
+        selectRobot('cleaner');
+      } else if (e.key === '4') {
+        selectRobot('drone');
+      }
+    });
+
+    // Initialize Default State
+    window.onload = function() {
+      ['parking', 'rescue', 'cleaner', 'drone'].forEach(key => updateStatusRow(key));
+      selectRobot('parking');
+    };
+  </script>
+</body>
+</html>
